@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>老爸生日快乐</title>
 <meta name="description" content="家庭生日祝福页面，仅用于亲友祝福">
 
@@ -16,7 +16,7 @@ html,body{
   color:white;
 }
 
-/* 初始卡片 */
+/* ===== 初始卡片 ===== */
 #center{
   position:fixed;
   inset:0;
@@ -52,13 +52,13 @@ button{
 #start{background:linear-gradient(135deg,#ffd27a,#ff7ab6);}
 #boom{background:rgba(255,255,255,.22);color:white}
 
-/* 弹窗祝福 */
+/* ===== 通用祝福弹窗 ===== */
 .bless{
   position:fixed;
   min-width:200px;
   max-width:80vw;
   padding:14px 22px;
-  background:rgba(255,255,255,0.25);
+  background:rgba(255,255,255,0.28);
   border-radius:20px;
   text-align:center;
   font-size:20px;
@@ -66,8 +66,9 @@ button{
   color:#fff;
   backdrop-filter:blur(14px);
   box-shadow:0 14px 36px rgba(0,0,0,.35);
-  animation:pop 1.25s ease forwards;
+  animation:pop 1.3s ease forwards;
   pointer-events:none;
+  z-index:30;
 }
 
 @keyframes pop{
@@ -77,7 +78,7 @@ button{
   100%{opacity:0;transform:scale(.96)}
 }
 
-/* 倒计时 */
+/* ===== 倒计时 ===== */
 #countdown{
   position:fixed;
   inset:0;
@@ -94,7 +95,7 @@ button{
 }
 #countdown.show{opacity:1}
 
-/* 最终告白 */
+/* ===== 红色终极界面 ===== */
 #final{
   position:fixed;
   inset:0;
@@ -108,10 +109,13 @@ button{
   opacity:0;
   pointer-events:none;
   transition:.6s;
-  z-index:99;
+  z-index:40;
   text-align:center;
 }
-#final.show{opacity:1}
+#final.show{
+  opacity:1;
+  pointer-events:auto;
+}
 #sign{
   margin-top:22px;
   font-size:clamp(18px,4vw,28px);
@@ -126,7 +130,7 @@ button{
 <div id="center">
   <div id="card">
     <h1>老爸</h1>
-    <p>点一下，祝福会在你身边出现 🎂</p>
+    <p>点一下，祝福会在你身边炸开 🎂</p>
     <button id="start">开始祝福 🎉</button>
     <button id="boom">🎆 终极惊喜</button>
   </div>
@@ -149,12 +153,16 @@ const messages = [
   "福气满满 🍀","平安喜乐 🧧","笑口常开 😄","顺顺利利 🚀",
   "少操心，多享福 ☀️","我们都爱你 ❤️",
   "愿你每天都有好心情 🌈","幸福常伴左右 🌸",
-  "健康最重要 💚","今天一定要开心 🎉"
+  "健康最重要 💚","今天一定要开心 🎉",
+  "你一直是我们的靠山 🏔️","家永远在你身后 🏠"
 ];
 
 const music = document.getElementById("music");
+const center = document.getElementById("center");
+const final = document.getElementById("final");
 
-function popRandomBless(text){
+/* ===== 随机祝福弹窗 ===== */
+function popBless(text, parent=document.body){
   const d = document.createElement("div");
   d.className = "bless";
   d.textContent = text;
@@ -163,12 +171,12 @@ function popRandomBless(text){
   d.style.top  = (Math.random()*65+15)+"vh";
   d.style.transform = "translate(-50%,-50%)";
 
-  document.body.appendChild(d);
+  parent.appendChild(d);
   if(navigator.vibrate) navigator.vibrate(20);
   setTimeout(()=>d.remove(),1300);
 }
 
-/* 倒计时 */
+/* ===== 倒计时 ===== */
 const countdown = document.getElementById("countdown");
 function startCountdown(cb){
   let n=3;
@@ -187,29 +195,34 @@ function startCountdown(cb){
   },900);
 }
 
-/* 中级模式 */
+/* ===== 中级模式 ===== */
 document.getElementById("start").onclick=()=>{
+  center.style.display="none";   // 关键：移除遮挡
   music.play().catch(()=>{});
   let i=0;
   const t=setInterval(()=>{
-    popRandomBless(messages[Math.floor(Math.random()*messages.length)]);
-    if(++i>=12) clearInterval(t);
-  },600);
+    popBless(messages[Math.floor(Math.random()*messages.length)]);
+    if(++i>=20) clearInterval(t);
+  },450);
 };
 
-/* 炸裂模式 */
+/* ===== 炸裂模式（在红色界面内） ===== */
 document.getElementById("boom").onclick=()=>{
+  center.style.display="none";
   music.play().catch(()=>{});
   startCountdown(()=>{
+    final.classList.add("show");
+
     let i=0;
     const t=setInterval(()=>{
-      popRandomBless(messages[Math.floor(Math.random()*messages.length)]);
-      if(++i>=30) clearInterval(t);
-    },250);
+      popBless(
+        messages[Math.floor(Math.random()*messages.length)],
+        final      // 关键：祝福只在红色界面内炸
+      );
+      if(++i>=60) clearInterval(t);
+    },180);
 
-    document.getElementById("final").classList.add("show");
     if(navigator.vibrate) navigator.vibrate([40,60,40]);
-    setTimeout(()=>document.getElementById("final").classList.remove("show"),2600);
   });
 };
 </script>
