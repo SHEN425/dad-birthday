@@ -15,6 +15,7 @@ html,body{
   color:white;
 }
 
+/* 初始卡片 */
 #center{
   position:fixed;
   inset:0;
@@ -43,9 +44,11 @@ button{
 #start{background:linear-gradient(135deg,#ffd27a,#ff7ab6);}
 #boom{background:rgba(255,255,255,.25);color:white}
 
+/* 微信安全舞台 */
 #stage{
   position:fixed;
-  left:0;right:0;top:72px;bottom:36px;
+  left:0; right:0;
+  top:72px; bottom:36px;
   pointer-events:none;
   z-index:30;
 }
@@ -59,7 +62,7 @@ button{
   border-radius:20px;
   text-align:center;
   font-size:18px;
-  animation:pop 1.25s ease forwards;
+  animation:pop 1.2s ease forwards;
 }
 
 @keyframes pop{
@@ -108,7 +111,7 @@ button{
 <div id="center">
   <div id="card">
     <h1>老爸</h1>
-    <p>点一下，祝福会在你身边出现 🎂</p>
+    <p>点一下，祝福会出现 🎂</p>
     <button id="start">开始祝福 🎉</button>
     <button id="boom">🎆 终极惊喜</button>
   </div>
@@ -127,94 +130,97 @@ button{
 </audio>
 
 <script>
-/* ===== 正确获取按钮（关键修复点） ===== */
-const startBtn = document.getElementById("start");
-const boomBtn  = document.getElementById("boom");
+/* ===== 微信兜底：等 DOM 完全加载 ===== */
+document.addEventListener("DOMContentLoaded", function(){
 
-const center = document.getElementById("center");
-const stage  = document.getElementById("stage");
-const final  = document.getElementById("final");
-const music  = document.getElementById("music");
-const countdown = document.getElementById("countdown");
+  const startBtn = document.getElementById("start");
+  const boomBtn  = document.getElementById("boom");
 
-const messages=[
-  "老爸生日快乐 🎂","身体健康 💪","天天开心 😄","万事顺意 ✨",
-  "福气满满 🍀","平安喜乐 🧧","我们都爱你 ❤️","少操心 多享福 ☀️"
-];
+  const center = document.getElementById("center");
+  const stage  = document.getElementById("stage");
+  const final  = document.getElementById("final");
+  const music  = document.getElementById("music");
+  const countdown = document.getElementById("countdown");
 
-function vibrateStrong(){
-  if(navigator.vibrate) navigator.vibrate([80,40,80]);
-}
+  const messages = [
+    "老爸生日快乐 🎂","身体健康 💪","天天开心 😄",
+    "万事顺意 ✨","我们都爱你 ❤️","少操心 多享福 ☀️"
+  ];
 
-function popBless(text){
-  const d=document.createElement("div");
-  d.className="bless";
-  d.textContent=text;
+  function vibrateStrong(){
+    if(navigator.vibrate) navigator.vibrate([80,40,80]);
+  }
 
-  const r=stage.getBoundingClientRect();
-  d.style.left=(Math.random()*(r.width-40)+20)+"px";
-  d.style.top =(Math.random()*(r.height-40)+20)+"px";
+  function popBless(text){
+    const d=document.createElement("div");
+    d.className="bless";
+    d.textContent=text;
 
-  stage.appendChild(d);
-  vibrateStrong();
-  setTimeout(()=>d.remove(),1300);
-}
+    const r=stage.getBoundingClientRect();
+    d.style.left=(Math.random()*(r.width-40)+20)+"px";
+    d.style.top =(Math.random()*(r.height-40)+20)+"px";
 
-function startCountdown(cb){
-  let n=3;
-  countdown.textContent=n;
-  countdown.classList.add("show");
-  vibrateStrong();
-  const t=setInterval(()=>{
-    n--;
-    if(n>0){
-      countdown.textContent=n;
-      vibrateStrong();
-    }else{
-      clearInterval(t);
-      countdown.classList.remove("show");
-      cb();
-    }
-  },900);
-}
+    stage.appendChild(d);
+    vibrateStrong();
+    setTimeout(()=>d.remove(),1200);
+  }
 
-function reset(delay){
-  setTimeout(()=>{
-    final.classList.remove("show");
-    center.style.display="flex";
-  },delay);
-}
+  function startCountdown(cb){
+    let n=3;
+    countdown.textContent=n;
+    countdown.classList.add("show");
+    vibrateStrong();
+    const t=setInterval(()=>{
+      n--;
+      if(n>0){
+        countdown.textContent=n;
+        vibrateStrong();
+      }else{
+        clearInterval(t);
+        countdown.classList.remove("show");
+        cb();
+      }
+    },900);
+  }
 
-/* ===== 中级模式 ===== */
-startBtn.onclick=()=>{
-  center.style.display="none";
-  music.play().catch(()=>{});
-  let i=0;
-  const t=setInterval(()=>{
-    popBless(messages[i%messages.length]);
-    if(++i>=20){
-      clearInterval(t);
-      reset(1200);
-    }
-  },350);
-};
+  function reset(delay){
+    setTimeout(()=>{
+      final.classList.remove("show");
+      center.style.display="flex";
+    },delay);
+  }
 
-/* ===== 炸裂模式 ===== */
-boomBtn.onclick=()=>{
-  center.style.display="none";
-  music.play().catch(()=>{});
-  startCountdown(()=>{
-    final.classList.add("show");
+  /* ===== 点击事件（现在一定生效） ===== */
+  startBtn.addEventListener("click", function(){
+    center.style.display="none";
+    music.play().catch(()=>{});
     let i=0;
     const t=setInterval(()=>{
-      popBless(messages[Math.floor(Math.random()*messages.length)]);
-      if(++i>=50){
+      popBless(messages[i%messages.length]);
+      if(++i>=20){
         clearInterval(t);
-        reset(2200);
+        reset(1200);
       }
-    },160);
+    },350);
   });
-};
+
+  boomBtn.addEventListener("click", function(){
+    center.style.display="none";
+    music.play().catch(()=>{});
+    startCountdown(()=>{
+      final.classList.add("show");
+      let i=0;
+      const t=setInterval(()=>{
+        popBless(messages[Math.floor(Math.random()*messages.length)]);
+        if(++i>=50){
+          clearInterval(t);
+          reset(2200);
+        }
+      },160);
+    });
+  });
+
+});
 </script>
 
 </body>
