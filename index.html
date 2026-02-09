@@ -15,7 +15,6 @@ html,body{
   color:white;
 }
 
-/* 初始卡片 */
 #center{
   position:fixed;
   inset:0;
@@ -32,10 +31,7 @@ html,body{
   text-align:center;
   backdrop-filter:blur(12px);
 }
-h1{
-  margin:10px 0;
-  font-size:48px;
-}
+h1{font-size:48px;margin:10px 0}
 button{
   border:none;
   border-radius:14px;
@@ -47,28 +43,22 @@ button{
 #start{background:linear-gradient(135deg,#ffd27a,#ff7ab6);}
 #boom{background:rgba(255,255,255,.25);color:white}
 
-/* ===== 微信安全舞台 ===== */
 #stage{
   position:fixed;
-  left:0;
-  right:0;
-  top:0;
-  bottom:0;
+  left:0;right:0;top:72px;bottom:36px;
   pointer-events:none;
   z-index:30;
 }
 
-/* 祝福弹窗 */
 .bless{
   position:absolute;
   min-width:180px;
   max-width:75vw;
   padding:14px 20px;
-  background:rgba(255,255,255,0.28);
+  background:rgba(255,255,255,.28);
   border-radius:20px;
   text-align:center;
   font-size:18px;
-  font-weight:600;
   animation:pop 1.25s ease forwards;
 }
 
@@ -79,7 +69,6 @@ button{
   100%{opacity:0;transform:scale(.95)}
 }
 
-/* 倒计时 */
 #countdown{
   position:fixed;
   inset:0;
@@ -94,7 +83,6 @@ button{
 }
 #countdown.show{opacity:1}
 
-/* 红色终极界面 */
 #final{
   position:fixed;
   inset:0;
@@ -139,58 +127,44 @@ button{
 </audio>
 
 <script>
-/* ===== 数据 ===== */
+/* ===== 正确获取按钮（关键修复点） ===== */
+const startBtn = document.getElementById("start");
+const boomBtn  = document.getElementById("boom");
+
+const center = document.getElementById("center");
+const stage  = document.getElementById("stage");
+const final  = document.getElementById("final");
+const music  = document.getElementById("music");
+const countdown = document.getElementById("countdown");
+
 const messages=[
   "老爸生日快乐 🎂","身体健康 💪","天天开心 😄","万事顺意 ✨",
-  "福气满满 🍀","平安喜乐 🧧","笑口常开 😄","少操心 多享福 ☀️",
-  "我们都爱你 ❤️","你永远是家的顶梁柱 🏠"
+  "福气满满 🍀","平安喜乐 🧧","我们都爱你 ❤️","少操心 多享福 ☀️"
 ];
 
-const center=document.getElementById("center");
-const stage=document.getElementById("stage");
-const final=document.getElementById("final");
-const music=document.getElementById("music");
-const countdown=document.getElementById("countdown");
-
-/* ===== 微信真实可视区兜底 ===== */
-function updateStage(){
-  stage.style.top="72px";     // 微信标题栏兜底
-  stage.style.bottom="36px";  // 底部手势区兜底
-}
-window.addEventListener("load",updateStage);
-window.addEventListener("resize",updateStage);
-
-/* ===== 强震动（Android 上限） ===== */
 function vibrateStrong(){
-  if(navigator.vibrate){
-    navigator.vibrate([80,40,80]);
-  }
+  if(navigator.vibrate) navigator.vibrate([80,40,80]);
 }
 
-/* ===== 弹祝福 ===== */
 function popBless(text){
   const d=document.createElement("div");
   d.className="bless";
   d.textContent=text;
 
   const r=stage.getBoundingClientRect();
-  const x=Math.random()*(r.width-40)+20;
-  const y=Math.random()*(r.height-40)+20;
-  d.style.left=x+"px";
-  d.style.top=y+"px";
+  d.style.left=(Math.random()*(r.width-40)+20)+"px";
+  d.style.top =(Math.random()*(r.height-40)+20)+"px";
 
   stage.appendChild(d);
   vibrateStrong();
   setTimeout(()=>d.remove(),1300);
 }
 
-/* ===== 倒计时 ===== */
 function startCountdown(cb){
   let n=3;
   countdown.textContent=n;
   countdown.classList.add("show");
   vibrateStrong();
-
   const t=setInterval(()=>{
     n--;
     if(n>0){
@@ -204,7 +178,6 @@ function startCountdown(cb){
   },900);
 }
 
-/* ===== 重置 ===== */
 function reset(delay){
   setTimeout(()=>{
     final.classList.remove("show");
@@ -213,13 +186,13 @@ function reset(delay){
 }
 
 /* ===== 中级模式 ===== */
-start.onclick=()=>{
+startBtn.onclick=()=>{
   center.style.display="none";
   music.play().catch(()=>{});
   let i=0;
   const t=setInterval(()=>{
     popBless(messages[i%messages.length]);
-    if(++i>=25){
+    if(++i>=20){
       clearInterval(t);
       reset(1200);
     }
@@ -227,7 +200,7 @@ start.onclick=()=>{
 };
 
 /* ===== 炸裂模式 ===== */
-boom.onclick=()=>{
+boomBtn.onclick=()=>{
   center.style.display="none";
   music.play().catch(()=>{});
   startCountdown(()=>{
@@ -235,7 +208,7 @@ boom.onclick=()=>{
     let i=0;
     const t=setInterval(()=>{
       popBless(messages[Math.floor(Math.random()*messages.length)]);
-      if(++i>=60){
+      if(++i>=50){
         clearInterval(t);
         reset(2200);
       }
