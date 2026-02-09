@@ -22,6 +22,7 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
+  z-index:10;
 }
 #card{
   background:rgba(255,255,255,.12);
@@ -56,13 +57,13 @@ button{
   border-radius:16px;
   background:rgba(255,255,255,.18);
   border:1px solid rgba(255,255,255,.25);
-  animation:float 4s linear forwards;
+  animation:float 3.8s linear forwards;
   pointer-events:none;
 }
 @keyframes float{
   from{opacity:0;transform:translateY(40px)}
-  10%{opacity:1}
-  to{opacity:0;transform:translateY(-240px)}
+  15%{opacity:1}
+  to{opacity:0;transform:translateY(-220px)}
 }
 
 /* 倒计时 */
@@ -137,30 +138,49 @@ canvas{
 <canvas id="fireworks"></canvas>
 
 <audio id="music" loop>
-  <!-- 把 happy.mp3 和 index.html 放在同一目录 -->
   <source src="happy.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 /* ===== 祝福语 ===== */
 const messages=[
-  "老爸生日快乐！🎂",
-  "身体健康！💪",
-  "天天开心！😄",
-  "万事顺意！✨",
-  "福气满满！🍀",
-  "我们都爱你 ❤️"
+  "老爸生日快乐！🎂","身体健康！💪","天天开心！😄","万事顺意！✨",
+  "福气满满！🍀","平安喜乐！🧧","我们都爱你 ❤️",
+  "少操心，多享福 ☀️","每天都有好心情 🌈"
 ];
 
+/* ===== 安全位置计算（微信/安卓兜底） ===== */
+function safePos(){
+  const topSafe = 80;    // 微信标题栏
+  const bottomSafe = 60; // 手势区
+  const padding = 20;
+
+  return {
+    x: Math.random()*(window.innerWidth-padding*2)+padding,
+    y: Math.random()*(window.innerHeight-topSafe-bottomSafe)+topSafe
+  };
+}
+
 /* ===== 祝福卡片 ===== */
-function spawnCard(){
+function spawnCard(parent=document.body){
   const d=document.createElement("div");
   d.className="card";
   d.textContent=messages[Math.floor(Math.random()*messages.length)];
-  d.style.left=Math.random()*80+10+"vw";
-  d.style.top=Math.random()*70+20+"vh";
-  document.body.appendChild(d);
-  setTimeout(()=>d.remove(),4000);
+
+  const p=safePos();
+  d.style.left=p.x+"px";
+  d.style.top=p.y+"px";
+
+  parent.appendChild(d);
+  vibrateStrong();
+  setTimeout(()=>d.remove(),3800);
+}
+
+/* ===== 安卓可感知震动 ===== */
+function vibrateStrong(){
+  if(navigator.vibrate){
+    navigator.vibrate([80,40,80]);
+  }
 }
 
 /* ===== 音乐 ===== */
@@ -172,10 +192,12 @@ function startCountdown(cb){
   let n=3;
   countdown.textContent=n;
   countdown.classList.add("show");
+  vibrateStrong();
   const t=setInterval(()=>{
     n--;
     if(n>0){
       countdown.textContent=n;
+      vibrateStrong();
     }else{
       clearInterval(t);
       countdown.classList.remove("show");
@@ -184,20 +206,15 @@ function startCountdown(cb){
   },900);
 }
 
-/* ===== 烟花（轻量） ===== */
+/* ===== 烟花 ===== */
 const canvas=document.getElementById("fireworks");
 const ctx=canvas.getContext("2d");
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
 resize();window.onresize=resize;
 let sparks=[];
 function firework(x,y){
-  for(let i=0;i<30;i++){
-    sparks.push({
-      x,y,
-      vx:(Math.random()-0.5)*6,
-      vy:(Math.random()-0.5)*6,
-      life:40
-    });
+  for(let i=0;i<40;i++){
+    sparks.push({x,y,vx:(Math.random()-.5)*6,vy:(Math.random()-.5)*6,life:50});
   }
 }
 function loop(){
@@ -205,26 +222,42 @@ function loop(){
   sparks=sparks.filter(p=>p.life-- >0);
   sparks.forEach(p=>{
     p.x+=p.vx;p.y+=p.vy;
-    ctx.fillStyle="rgba(255,200,120,.8)";
+    ctx.fillStyle="rgba(255,200,120,.85)";
     ctx.fillRect(p.x,p.y,2,2);
   });
   requestAnimationFrame(loop);
 }
 loop();
 
+/* ===== 返回初始 ===== */
+function resetToStart(delay){
+  setTimeout(()=>{
+    document.getElementById("final").classList.remove("show");
+    document.getElementById("center").style.display="flex";
+  },delay);
+}
+
 /* ===== 按钮 ===== */
 document.getElementById("start").onclick=()=>{
+  document.getElementById("center").style.display="none";
   music.play().catch(()=>{});
-  for(let i=0;i<20;i++)setTimeout(spawnCard,i*120);
+  for(let i=0;i<30;i++){
+    setTimeout(()=>spawnCard(),i*120);
+  }
+  resetToStart(4200);
 };
 
 document.getElementById("boom").onclick=()=>{
+  document.getElementById("center").style.display="none";
   music.play().catch(()=>{});
   startCountdown(()=>{
-    for(let i=0;i<60;i++)setTimeout(spawnCard,i*20);
+    const final=document.getElementById("final");
+    final.classList.add("show");
+    for(let i=0;i<90;i++){
+      setTimeout(()=>spawnCard(final),i*30);
+    }
     firework(innerWidth/2,innerHeight/2);
-    document.getElementById("final").classList.add("show");
-    setTimeout(()=>document.getElementById("final").classList.remove("show"),2600);
+    resetToStart(5200);
   });
 };
 </script>
