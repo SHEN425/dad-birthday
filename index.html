@@ -52,28 +52,28 @@ button{
 #start{background:linear-gradient(135deg,#ffd27a,#ff7ab6);}
 #boom{background:rgba(255,255,255,.22);color:white}
 
-/* ===== 通用祝福弹窗 ===== */
+/* ===== 祝福弹窗 ===== */
 .bless{
   position:fixed;
-  min-width:200px;
-  max-width:80vw;
-  padding:14px 22px;
+  min-width:180px;
+  max-width:75vw;
+  padding:14px 20px;
   background:rgba(255,255,255,0.28);
   border-radius:20px;
   text-align:center;
-  font-size:20px;
+  font-size:18px;
   font-weight:600;
   color:#fff;
   backdrop-filter:blur(14px);
   box-shadow:0 14px 36px rgba(0,0,0,.35);
-  animation:pop 1.3s ease forwards;
+  animation:pop 1.25s ease forwards;
   pointer-events:none;
   z-index:30;
 }
 
 @keyframes pop{
   0%{opacity:0;transform:scale(.6)}
-  40%{opacity:1;transform:scale(1.15)}
+  40%{opacity:1;transform:scale(1.12)}
   70%{transform:scale(1)}
   100%{opacity:0;transform:scale(.96)}
 }
@@ -130,7 +130,7 @@ button{
 <div id="center">
   <div id="card">
     <h1>老爸</h1>
-    <p>点一下，祝福会在你身边炸开 🎂</p>
+    <p>点一下，祝福会在你身边出现 🎂</p>
     <button id="start">开始祝福 🎉</button>
     <button id="boom">🎆 终极惊喜</button>
   </div>
@@ -157,22 +157,34 @@ const messages = [
   "你一直是我们的靠山 🏔️","家永远在你身后 🏠"
 ];
 
-const music = document.getElementById("music");
 const center = document.getElementById("center");
-const final = document.getElementById("final");
+const final  = document.getElementById("final");
+const music  = document.getElementById("music");
 
-/* ===== 随机祝福弹窗 ===== */
+/* ===== 屏幕安全范围内随机位置 ===== */
+function safePosition(){
+  const padding = 20;
+  const maxW = window.innerWidth  - padding;
+  const maxH = window.innerHeight - padding;
+  return {
+    x: Math.random() * (maxW - padding) + padding,
+    y: Math.random() * (maxH - padding*2) + padding
+  };
+}
+
+/* ===== 弹祝福 ===== */
 function popBless(text, parent=document.body){
   const d = document.createElement("div");
   d.className = "bless";
   d.textContent = text;
 
-  d.style.left = (Math.random()*70+15)+"vw";
-  d.style.top  = (Math.random()*65+15)+"vh";
+  const pos = safePosition();
+  d.style.left = pos.x + "px";
+  d.style.top  = pos.y + "px";
   d.style.transform = "translate(-50%,-50%)";
 
   parent.appendChild(d);
-  if(navigator.vibrate) navigator.vibrate(20);
+  if(navigator.vibrate) navigator.vibrate(15);
   setTimeout(()=>d.remove(),1300);
 }
 
@@ -195,18 +207,29 @@ function startCountdown(cb){
   },900);
 }
 
+/* ===== 模式结束 → 回到初始 ===== */
+function resetToStart(delay=1500){
+  setTimeout(()=>{
+    final.classList.remove("show");
+    center.style.display="flex";
+  },delay);
+}
+
 /* ===== 中级模式 ===== */
 document.getElementById("start").onclick=()=>{
-  center.style.display="none";   // 关键：移除遮挡
+  center.style.display="none";
   music.play().catch(()=>{});
   let i=0;
   const t=setInterval(()=>{
     popBless(messages[Math.floor(Math.random()*messages.length)]);
-    if(++i>=20) clearInterval(t);
-  },450);
+    if(++i>=24){
+      clearInterval(t);
+      resetToStart();
+    }
+  },380);
 };
 
-/* ===== 炸裂模式（在红色界面内） ===== */
+/* ===== 炸裂模式 ===== */
 document.getElementById("boom").onclick=()=>{
   center.style.display="none";
   music.play().catch(()=>{});
@@ -217,10 +240,13 @@ document.getElementById("boom").onclick=()=>{
     const t=setInterval(()=>{
       popBless(
         messages[Math.floor(Math.random()*messages.length)],
-        final      // 关键：祝福只在红色界面内炸
+        final
       );
-      if(++i>=60) clearInterval(t);
-    },180);
+      if(++i>=60){
+        clearInterval(t);
+        resetToStart(2200);
+      }
+    },160);
 
     if(navigator.vibrate) navigator.vibrate([40,60,40]);
   });
