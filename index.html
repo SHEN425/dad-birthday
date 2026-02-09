@@ -4,7 +4,6 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
 <title>老爸生日快乐</title>
-
 <meta name="description" content="家庭生日祝福页面，仅用于亲友祝福">
 
 <style>
@@ -17,7 +16,7 @@ html,body{
   color:white;
 }
 
-/* 中心初始卡片 */
+/* 初始卡片 */
 #center{
   position:fixed;
   inset:0;
@@ -40,9 +39,7 @@ h1{
   font-size:48px;
   text-shadow:0 0 30px rgba(255,200,150,.8);
 }
-p{
-  opacity:.85;
-}
+p{opacity:.85}
 button{
   border:none;
   border-radius:14px;
@@ -52,29 +49,15 @@ button{
   font-weight:700;
   cursor:pointer;
 }
-#start{
-  background:linear-gradient(135deg,#ffd27a,#ff7ab6);
-}
-#boom{
-  background:rgba(255,255,255,.22);
-  color:white;
-}
+#start{background:linear-gradient(135deg,#ffd27a,#ff7ab6);}
+#boom{background:rgba(255,255,255,.22);color:white}
 
-/* ===== 中央弹窗祝福 ===== */
-#center-bless{
+/* 弹窗祝福 */
+.bless{
   position:fixed;
-  left:50%;
-  top:45%;
-  transform:translate(-50%,-50%);
-  z-index:999;
-  pointer-events:none;
-}
-
-.center-bless-item{
   min-width:200px;
   max-width:80vw;
   padding:14px 22px;
-  margin:12px auto;
   background:rgba(255,255,255,0.25);
   border-radius:20px;
   text-align:center;
@@ -83,25 +66,15 @@ button{
   color:#fff;
   backdrop-filter:blur(14px);
   box-shadow:0 14px 36px rgba(0,0,0,.35);
-  animation:blessPop 1.3s ease forwards;
+  animation:pop 1.25s ease forwards;
+  pointer-events:none;
 }
 
-@keyframes blessPop{
-  0%{
-    opacity:0;
-    transform:scale(0.6);
-  }
-  40%{
-    opacity:1;
-    transform:scale(1.12);
-  }
-  70%{
-    transform:scale(1);
-  }
-  100%{
-    opacity:0;
-    transform:scale(0.96);
-  }
+@keyframes pop{
+  0%{opacity:0;transform:scale(.6)}
+  40%{opacity:1;transform:scale(1.15)}
+  70%{transform:scale(1)}
+  100%{opacity:0;transform:scale(.96)}
 }
 
 /* 倒计时 */
@@ -119,11 +92,9 @@ button{
   transition:.3s;
   z-index:50;
 }
-#countdown.show{
-  opacity:1;
-}
+#countdown.show{opacity:1}
 
-/* 终极祝福 */
+/* 最终告白 */
 #final{
   position:fixed;
   inset:0;
@@ -140,9 +111,7 @@ button{
   z-index:99;
   text-align:center;
 }
-#final.show{
-  opacity:1;
-}
+#final.show{opacity:1}
 #sign{
   margin-top:22px;
   font-size:clamp(18px,4vw,28px);
@@ -157,13 +126,12 @@ button{
 <div id="center">
   <div id="card">
     <h1>老爸</h1>
-    <p>点一下，祝福在你眼前出现 🎂</p>
+    <p>点一下，祝福会在你身边出现 🎂</p>
     <button id="start">开始祝福 🎉</button>
     <button id="boom">🎆 终极惊喜</button>
   </div>
 </div>
 
-<div id="center-bless"></div>
 <div id="countdown"></div>
 
 <div id="final">
@@ -176,81 +144,72 @@ button{
 </audio>
 
 <script>
-/* ===== 祝福内容 ===== */
 const messages = [
-  "老爸生日快乐 🎂",
-  "身体健康 💪",
-  "天天开心 😄",
-  "万事顺意 ✨",
-  "福气满满 🍀",
-  "我们都爱你 ❤️"
+  "老爸生日快乐 🎂","身体健康 💪","天天开心 😄","万事顺意 ✨",
+  "福气满满 🍀","平安喜乐 🧧","笑口常开 😄","顺顺利利 🚀",
+  "少操心，多享福 ☀️","我们都爱你 ❤️",
+  "愿你每天都有好心情 🌈","幸福常伴左右 🌸",
+  "健康最重要 💚","今天一定要开心 🎉"
 ];
 
 const music = document.getElementById("music");
-const centerBless = document.getElementById("center-bless");
 
-/* ===== 中央弹祝福 + 轻微震动 ===== */
-function popCenterBless(text){
+function popRandomBless(text){
   const d = document.createElement("div");
-  d.className = "center-bless-item";
+  d.className = "bless";
   d.textContent = text;
-  centerBless.appendChild(d);
 
-  // 轻微震动（支持的手机才会生效）
-  if (navigator.vibrate) {
-    navigator.vibrate(20);
-  }
+  d.style.left = (Math.random()*70+15)+"vw";
+  d.style.top  = (Math.random()*65+15)+"vh";
+  d.style.transform = "translate(-50%,-50%)";
 
+  document.body.appendChild(d);
+  if(navigator.vibrate) navigator.vibrate(20);
   setTimeout(()=>d.remove(),1300);
 }
 
-/* ===== 倒计时 ===== */
+/* 倒计时 */
 const countdown = document.getElementById("countdown");
 function startCountdown(cb){
-  let n = 3;
-  countdown.textContent = n;
+  let n=3;
+  countdown.textContent=n;
   countdown.classList.add("show");
-
-  const t = setInterval(()=>{
+  const t=setInterval(()=>{
     n--;
-    if(n > 0){
-      countdown.textContent = n;
-      if (navigator.vibrate) navigator.vibrate(30);
+    if(n>0){
+      countdown.textContent=n;
+      if(navigator.vibrate) navigator.vibrate(30);
     }else{
       clearInterval(t);
       countdown.classList.remove("show");
       cb();
     }
-  }, 900);
+  },900);
 }
 
-/* ===== 按钮逻辑 ===== */
-document.getElementById("start").onclick = () => {
+/* 中级模式 */
+document.getElementById("start").onclick=()=>{
   music.play().catch(()=>{});
-  let i = 0;
-  const timer = setInterval(()=>{
-    popCenterBless(messages[i % messages.length]);
-    i++;
-    if(i >= 6) clearInterval(timer);
-  }, 900);
+  let i=0;
+  const t=setInterval(()=>{
+    popRandomBless(messages[Math.floor(Math.random()*messages.length)]);
+    if(++i>=12) clearInterval(t);
+  },600);
 };
 
-document.getElementById("boom").onclick = () => {
+/* 炸裂模式 */
+document.getElementById("boom").onclick=()=>{
   music.play().catch(()=>{});
   startCountdown(()=>{
-    let i = 0;
-    const timer = setInterval(()=>{
-      popCenterBless(messages[i % messages.length]);
-      i++;
-      if(i >= 10) clearInterval(timer);
-    }, 650);
+    let i=0;
+    const t=setInterval(()=>{
+      popRandomBless(messages[Math.floor(Math.random()*messages.length)]);
+      if(++i>=30) clearInterval(t);
+    },250);
 
     document.getElementById("final").classList.add("show");
-    if (navigator.vibrate) navigator.vibrate([40,60,40]);
-
-    setTimeout(()=>{
-      document.getElementById("final").classList.remove("show");
-    },2600);
+    if(navigator.vibrate) navigator.vibrate([40,60,40]);
+    setTimeout(()=>document.getElementById("final").classList.remove("show"),2600);
   });
 };
 </script>
